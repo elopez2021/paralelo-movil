@@ -24,6 +24,14 @@ wheels/
 .installed.cfg
 *.egg
 
+# Database & Uploads
+app.db
+*.db
+uploads/*
+!uploads/.gitkeep
+backend/uploads/*
+!backend/uploads/.gitkeep
+
 # Archives / temporary
 *.zip
 *.tar.gz
@@ -34,3 +42,13 @@ wheels/
 .env.*
 .vscode/
 .idea/
+
+# Android / Gradle
+.gradle/
+**/build/
+*.iml
+.idea/
+local.properties
+.cxx/
+*.apk
+*.aab
