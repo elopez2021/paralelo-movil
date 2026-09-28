@@ -48,7 +48,7 @@ Deberás ver la documentación Swagger interactiva con todos los endpoints de au
    - Haz clic en **File > Open...** (o **Open** en la pantalla de bienvenida).
    - Selecciona la carpeta:
      ```
-     e:\algoritmos paralelos\tarea 1\app_movil
+     e:\algoritmos paralelos\tarea 1\Mobile
      ```
 2. **Sincronización:**
    - Espera a que termine la sincronización de Gradle (*Sync Project with Gradle Files*). Si te pide descargar SDKs o herramientas, dale en aceptar.

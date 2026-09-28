@@ -13,11 +13,13 @@ Proyecto completo para la asignatura de **Algoritmos Paralelos**. Integra un Bac
   - Subida de archivos (`POST /upload`, `DELETE /upload/{id}`).
   - Endpoints de Dashboard para consumo concurrente (`/dashboard/profile`, `/dashboard/stats`, etc.).
   - Dockerizado con [`Dockerfile`](backend/Dockerfile) y [`docker-compose.yml`](docker-compose.yml).
-- **`app_movil/`**: Aplicación Android Nativa en Kotlin.
+- **`Mobile/`**: Aplicación Android Nativa en Kotlin.
   - Arquitectura **MVVM** (View, ViewModel, Repository, Retrofit, StateFlow).
   - Consumo simultáneo de endpoints al cargar Dashboard (`async`/`awaitAll`).
   - Pantalla interactiva de **Benchmark Concurrente vs. Secuencial** con cálculo de Aceleración (*Speedup*).
   - Guía teórica en pantalla lista para la sustentación y defensa en clase.
+- **`Documentacion/`**:
+  - `arquitectura.md`, `endpoints.md`, `explicacion_concurrencia.md`, `comparacion_tiempos.md`.
 
 ---
 
@@ -47,7 +49,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ## 📱 2. Ejecución de la App Móvil (Android Kotlin)
 
 1. Abre **Android Studio**.
-2. Selecciona **Open** y abre la carpeta [`app_movil/`](app_movil/).
+2. Selecciona **Open** y abre la carpeta [`Mobile/`](Mobile/).
 3. Espera la sincronización de dependencias Gradle.
 4. Ejecuta en el emulador de Android Studio o en un dispositivo físico.
    - En emulador, se conectará a `http://10.0.2.2:8000/`.
