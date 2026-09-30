@@ -60,7 +60,7 @@ fun AppNavigation(activity: ComponentActivity) {
     val dashboardRepository = remember { DashboardRepository(apiService) }
 
     val authViewModel = remember { AuthViewModel(authRepository) }
-    val usersViewModel = remember { UsersViewModel(userRepository) }
+    val usersViewModel = remember { UsersViewModel(userRepository, fileRepository) }
     val dashboardViewModel = remember { DashboardViewModel(dashboardRepository) }
     val benchmarkViewModel = remember { ConcurrencyBenchmarkViewModel(fileRepository) }
 

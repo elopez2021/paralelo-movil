@@ -16,7 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.movil.paralelo.ui.theme.*
@@ -35,6 +38,7 @@ fun LoginScreen(
     var apellido by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("admin@paralelo.com") }
     var password by remember { mutableStateOf("admin123") }
+    var passwordVisible by remember { mutableStateOf(false) }
     var showIpDialog by remember { mutableStateOf(false) }
     var customIp by remember { mutableStateOf(Constants.BASE_URL) }
 
@@ -118,7 +122,14 @@ fun LoginScreen(
                     onValueChange = { password = it },
                     label = { Text("Contraseña") },
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                    visualTransformation = PasswordVisualTransformation(),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    trailingIcon = {
+                        val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(image, contentDescription = if (passwordVisible) "Ocultar" else "Mostrar")
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp)
                 )
 
