@@ -19,11 +19,11 @@ import kotlin.system.measureTimeMillis
 class ConcurrencyBenchmarkViewModel(private val fileRepository: FileRepository) : ViewModel() {
 
     private val defaultTasks = listOf(
-        TaskItem(1, "Archivo_Dataset_1.csv", 1024 * 50),
-        TaskItem(2, "Reporte_Metricas_2.pdf", 1024 * 80),
-        TaskItem(3, "Foto_Perfil_3.jpg", 1024 * 120),
-        TaskItem(4, "Datos_Sensores_4.json", 1024 * 40),
-        TaskItem(5, "Log_Auditoria_5.txt", 1024 * 90)
+        TaskItem(1, "Archivo_Dataset_1.csv", 1024 * 1024 * 5),  // 5 MB
+        TaskItem(2, "Reporte_Metricas_2.pdf", 1024 * 1024 * 8), // 8 MB
+        TaskItem(3, "Foto_Perfil_3.jpg", 1024 * 1024 * 4),      // 4 MB
+        TaskItem(4, "Datos_Sensores_4.json", 1024 * 1024 * 6),  // 6 MB
+        TaskItem(5, "Log_Auditoria_5.txt", 1024 * 1024 * 7)     // 7 MB
     )
 
     private val _tasks = MutableStateFlow<List<TaskItem>>(defaultTasks.map { it.copy() })
@@ -36,7 +36,7 @@ class ConcurrencyBenchmarkViewModel(private val fileRepository: FileRepository) 
         _tasks.value = defaultTasks.map { it.copy(status = TaskStatus.PENDING, timeTakenMs = 0L) }
     }
 
-    // --- 1. EJECUCIÓN SECUENCIAL OBLIGATORIA ---
+    // --- EJECUCIÓN SECUENCIAL OBLIGATORIA ---
     fun runSequentialBenchmark() {
         viewModelScope.launch {
             resetTasks()
@@ -56,8 +56,8 @@ class ConcurrencyBenchmarkViewModel(private val fileRepository: FileRepository) 
                     _tasks.value = currentTaskList.toList()
 
                     val taskTime = measureTimeMillis {
-                        val content = "Contenido de prueba para el archivo ${task.name}".toByteArray()
-                        val res = fileRepository.uploadBytes(task.name, content)
+                        val content = ByteArray(task.sizeBytes.toInt()) { (it % 256).toByte() }
+                        val res = fileRepository.uploadBytes(task.name, content, "application/octet-stream")
                         if (res is Resource.Error) {
                             currentTaskList[i] = task.copy(status = TaskStatus.ERROR)
                         } else {
@@ -106,20 +106,24 @@ class ConcurrencyBenchmarkViewModel(private val fileRepository: FileRepository) 
                 val deferredList = currentTaskList.indices.map { index ->
                     async(Dispatchers.IO) {
                         val task = currentTaskList[index]
+                        var finalStatus = TaskStatus.COMPLETED
                         val taskTime = measureTimeMillis {
-                            val content = "Contenido de prueba para el archivo ${task.name}".toByteArray()
-                            fileRepository.uploadBytes(task.name, content)
+                            val content = ByteArray(task.sizeBytes.toInt()) { (it % 256).toByte() }
+                            val res = fileRepository.uploadBytes(task.name, content, "application/octet-stream")
+                            if (res is Resource.Error) {
+                                finalStatus = TaskStatus.ERROR
+                            }
                         }
-                        Pair(index, taskTime)
+                        Triple(index, taskTime, finalStatus)
                     }
                 }
 
                 // Esperamos la resolución concurrente de todos los hilos
                 val results = deferredList.awaitAll()
 
-                for ((idx, timeTaken) in results) {
+                for ((idx, timeTaken, finalStatus) in results) {
                     currentTaskList[idx] = currentTaskList[idx].copy(
-                        status = TaskStatus.COMPLETED,
+                        status = finalStatus,
                         timeTakenMs = timeTaken
                     )
                 }
