@@ -203,11 +203,6 @@ resource "google_cloud_run_v2_service" "api" {
       }
 
       env {
-        name  = "PORT"
-        value = "8000"
-      }
-
-      env {
         name  = "STORAGE_BUCKET"
         value = google_storage_bucket.uploads_bucket.name
       }
