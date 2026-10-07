@@ -1,6 +1,7 @@
 # 1. Habilitación de APIs necesarias en GCP
 locals {
   gcp_services = [
+    "cloudresourcemanager.googleapis.com",
     "run.googleapis.com",
     "artifactregistry.googleapis.com",
     "apigateway.googleapis.com",
