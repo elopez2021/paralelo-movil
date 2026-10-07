@@ -82,6 +82,13 @@ jobs:
       - name: Provisionar Artifact Registry con Terraform
         working-directory: terraform
         run: |
+          echo "Verificando si el repositorio ya existe para importarlo..."
+          terraform import \
+            -var="project_id=${{ env.GCP_PROJECT_ID }}" \
+            -var="region=${{ env.GCP_REGION }}" \
+            google_artifact_registry_repository.repo \
+            projects/${{ env.GCP_PROJECT_ID }}/locations/${{ env.GCP_REGION }}/repositories/${{ env.ARTIFACT_REPO }} || true
+
           terraform apply -auto-approve \
             -target=google_project_service.enabled_apis \
             -target=google_artifact_registry_repository.repo \
@@ -113,6 +120,28 @@ jobs:
       - name: Terraform Apply (Infraestructura completa)
         working-directory: terraform
         run: |
+          echo "Importando recursos existentes si fueron creados previamente..."
+          terraform import \
+            -var="project_id=${{ env.GCP_PROJECT_ID }}" \
+            -var="region=${{ env.GCP_REGION }}" \
+            -var="container_image=${{ env.CONTAINER_IMAGE }}" \
+            google_service_account.cloud_run_sa \
+            projects/${{ env.GCP_PROJECT_ID }}/serviceAccounts/paralelo-run-sa@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com || true
+
+          terraform import \
+            -var="project_id=${{ env.GCP_PROJECT_ID }}" \
+            -var="region=${{ env.GCP_REGION }}" \
+            -var="container_image=${{ env.CONTAINER_IMAGE }}" \
+            google_secret_manager_secret.db_url_secret \
+            projects/${{ env.GCP_PROJECT_ID }}/secrets/DATABASE_URL || true
+
+          terraform import \
+            -var="project_id=${{ env.GCP_PROJECT_ID }}" \
+            -var="region=${{ env.GCP_REGION }}" \
+            -var="container_image=${{ env.CONTAINER_IMAGE }}" \
+            google_secret_manager_secret.jwt_secret \
+            projects/${{ env.GCP_PROJECT_ID }}/secrets/JWT_SECRET || true
+
           terraform apply -auto-approve \
             -var="project_id=${{ env.GCP_PROJECT_ID }}" \
             -var="region=${{ env.GCP_REGION }}" \
