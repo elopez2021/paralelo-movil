@@ -1,7 +1,7 @@
 package com.movil.paralelo.utils
 
 object Constants {
-    var BASE_URL: String = "https://endosmotic-archer-ringless.ngrok-free.dev/"
+    var BASE_URL: String = "https://paralelo-api-vjumwdtiwa-uc.a.run.app/"
 
     const val PREFS_NAME = "paralelo_movil_prefs"
     const val KEY_AUTH_TOKEN = "key_auth_token"
