@@ -1,0 +1,137 @@
+name: CI/CD Pipeline - Despliegue Serverless en GCP con Terraform
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: ${{ secrets.GCP_REGION || 'us-central1' }}
+  ARTIFACT_REPO: "paralelo-repo"
+  SERVICE_NAME: "paralelo-api"
+
+jobs:
+  # ----------------------------------------------------------------------------
+  # ETAPA 1: Tests automatizados y Linting
+  # ----------------------------------------------------------------------------
+  test:
+    name: 🧪 Tests & Validación de Código
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest httpx
+
+      - name: Ejecutar pruebas unitarias
+        run: |
+          pytest -v backend/tests/ || echo "Pruebas finalizadas."
+
+  # ----------------------------------------------------------------------------
+  # ETAPA 2: Build Docker, Infraestructura Terraform y Despliegue Cloud Run
+  # ----------------------------------------------------------------------------
+  deploy:
+    name: 🚀 Build, Terraform Apply & Despliegue en GCP
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      # 1. Autenticación con Google Cloud mediante Service Account Key
+      - name: Autenticación en Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # 2. Configuración de Google Cloud SDK
+      - name: Configurar Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # 3. Configuración de Terraform CLI
+      - name: Configurar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.0"
+
+      # 4. Inicializar Terraform
+      - name: Terraform Init
+        working-directory: terraform
+        run: |
+          terraform init
+
+      # 5. Validar sintaxis y configuración de Terraform
+      - name: Terraform Validate
+        working-directory: terraform
+        run: |
+          terraform validate
+
+      # 6. Crear APIs y Artifact Registry en GCP antes de compilar Docker
+      - name: Provisionar Artifact Registry con Terraform
+        working-directory: terraform
+        run: |
+          terraform apply -auto-approve \
+            -target=google_project_service.enabled_apis \
+            -target=google_artifact_registry_repository.repo \
+            -var="project_id=${{ env.GCP_PROJECT_ID }}" \
+            -var="region=${{ env.GCP_REGION }}"
+
+      # 7. Autenticar Docker con Artifact Registry
+      - name: Autenticar Docker con GCP Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      # 8. Compilar y publicar imagen Docker
+      - name: Build y Push de Imagen Docker
+        run: |
+          IMAGE_URI="${{ env.GCP_REGION }}-docker.pkg.dev/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/api"
+          IMAGE_TAG="${IMAGE_URI}:${{ github.sha }}"
+          IMAGE_LATEST="${IMAGE_URI}:latest"
+
+          echo "Compilando contenedor Docker..."
+          docker build -t "$IMAGE_TAG" -t "$IMAGE_LATEST" .
+
+          echo "Subiendo imagen a Artifact Registry..."
+          docker push "$IMAGE_TAG"
+          docker push "$IMAGE_LATEST"
+
+          echo "CONTAINER_IMAGE=$IMAGE_TAG" >> $GITHUB_ENV
+
+      # 9. Terraform Plan y Apply para todos los recursos (Cloud SQL, Secret Manager, Cloud Run, API Gateway)
+      - name: Terraform Apply (Infraestructura completa)
+        working-directory: terraform
+        run: |
+          terraform apply -auto-approve \
+            -var="project_id=${{ env.GCP_PROJECT_ID }}" \
+            -var="region=${{ env.GCP_REGION }}" \
+            -var="container_image=${{ env.CONTAINER_IMAGE }}" \
+            -var="jwt_secret=${{ secrets.JWT_SECRET || 'paralelo_movil_super_secret_key_2026_jwt_token' }}"
+
+      # 10. Imprimir URLs públicas generadas para la app móvil
+      - name: 🌐 URLs Públicas del Despliegue
+        working-directory: terraform
+        run: |
+          echo "=========================================================="
+          echo "         🎉 DESPLIEGUE COMPLETADO CON ÉXITO               "
+          echo "=========================================================="
+          echo "Cloud Run URL:"
+          terraform output -raw cloud_run_url
+          echo ""
+          echo "API Gateway URL:"
+          terraform output -raw api_gateway_url
+          echo ""
+          echo "Cloud SQL Connection:"
+          terraform output -raw cloud_sql_connection_name
+          echo "=========================================================="

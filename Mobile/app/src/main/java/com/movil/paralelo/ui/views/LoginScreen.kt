@@ -82,7 +82,7 @@ fun LoginScreen(
             ) {
                 // Título
                 Text(
-                    text = "⚡ Paralelo Móvil",
+                    text = "Paralelo Móvil",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -183,7 +183,14 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Toggle entre Login y Registro
-                TextButton(onClick = { isRegisterMode = !isRegisterMode }) {
+                TextButton(onClick = {
+                    isRegisterMode = !isRegisterMode
+                    // Limpiar los campos al cambiar de modo
+                    email = ""
+                    password = ""
+                    nombre = ""
+                    apellido = ""
+                }) {
                     Text(
                         text = if (isRegisterMode) "¿Ya tienes cuenta? Inicia sesión" else "¿No tienes cuenta? Regístrate aquí",
                         color = Cyan500

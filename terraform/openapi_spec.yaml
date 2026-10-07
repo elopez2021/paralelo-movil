@@ -1,0 +1,185 @@
+swagger: "2.0"
+info:
+  title: "API Gateway Paralelo Movil"
+  description: "Gateway administrado para la API de Algoritmos Paralelos"
+  version: "1.0.0"
+schemes:
+  - "https"
+produces:
+  - "application/json"
+
+paths:
+  /:
+    get:
+      summary: "Root Info"
+      operationId: "getRoot"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        200:
+          description: "OK"
+
+  /health:
+    get:
+      summary: "Health Check"
+      operationId: "getHealth"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        200:
+          description: "OK"
+
+  /login:
+    post:
+      summary: "Login de Usuario"
+      operationId: "postLogin"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        200:
+          description: "OK"
+
+  /register:
+    post:
+      summary: "Registro de Usuario"
+      operationId: "postRegister"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        201:
+          description: "Created"
+
+  /users:
+    get:
+      summary: "Listar Usuarios"
+      operationId: "getUsers"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        200:
+          description: "OK"
+    post:
+      summary: "Crear Usuario"
+      operationId: "createUser"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        201:
+          description: "Created"
+
+  /users/{id}:
+    get:
+      summary: "Obtener Usuario por ID"
+      operationId: "getUserById"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "integer"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        200:
+          description: "OK"
+    put:
+      summary: "Actualizar Usuario"
+      operationId: "updateUser"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "integer"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        200:
+          description: "OK"
+    delete:
+      summary: "Eliminar Usuario"
+      operationId: "deleteUser"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          type: "integer"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        200:
+          description: "OK"
+
+  /upload:
+    post:
+      summary: "Subir Archivo"
+      operationId: "uploadFile"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        201:
+          description: "Created"
+
+  /dashboard/profile:
+    get:
+      summary: "Perfil de Dashboard"
+      operationId: "getDashboardProfile"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        200:
+          description: "OK"
+
+  /dashboard/stats:
+    get:
+      summary: "Estadisticas de Dashboard"
+      operationId: "getDashboardStats"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        200:
+          description: "OK"
+
+  /dashboard/notifications:
+    get:
+      summary: "Notificaciones de Dashboard"
+      operationId: "getDashboardNotifications"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        200:
+          description: "OK"
+
+  /api/proceso/secuencial:
+    get:
+      summary: "Ejecución de algoritmo secuencial"
+      operationId: "getProcesoSecuencial"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        200:
+          description: "OK"
+
+  /api/proceso/concurrente:
+    get:
+      summary: "Ejecución de algoritmo concurrente"
+      operationId: "getProcesoConcurrente"
+      x-google-backend:
+        address: "${cloud_run_url}"
+        path_translation: "APPEND_PATH_TO_ADDRESS"
+      responses:
+        200:
+          description: "OK"
+

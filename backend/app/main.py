@@ -38,9 +38,9 @@ def seed_default_user():
 seed_default_user()
 
 app = FastAPI(
-    title="API Paralelo Móvil - Backend & Concurrencia",
+    title="API Paralelo Móvil",
     description=(
-        "API REST para la asignatura de Algoritmos Paralelos. "
+        "API REST para Algoritmos Paralelos. "
         "Incluye autenticación JWT, CRUD de usuarios, subida de archivos "
         "y procesamiento concurrente para consumo desde Android Kotlin (MVVM)."
     ),

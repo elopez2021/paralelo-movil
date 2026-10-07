@@ -34,6 +34,7 @@ backend/uploads/*
 
 # Archives / temporary
 *.zip
+*.rar
 *.tar.gz
 *.log
 
@@ -52,3 +53,20 @@ local.properties
 .cxx/
 *.apk
 *.aab
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+

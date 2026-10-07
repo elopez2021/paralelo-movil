@@ -1,0 +1,30 @@
+# ==============================================================================
+# CONFIGURACIÓN DE VARIABLES PARA TERRAFORM (PLANTILLA DE EJEMPLO)
+# Copia este archivo como 'terraform.tfvars' y reemplaza con los valores reales.
+# ==============================================================================
+
+# ID del proyecto en Google Cloud Platform
+project_id         = "tu-gcp-project-id"
+
+# Región geográfica de GCP (us-central1 recomendada por costos y disponibilidad)
+region             = "us-central1"
+
+# Entorno de despliegue
+environment        = "prod"
+
+# Nombres de recursos
+service_name       = "paralelo-api"
+artifact_repo_name = "paralelo-repo"
+
+# Base de datos Cloud SQL PostgreSQL gestionada
+enable_cloud_sql   = true
+db_instance_tier   = "db-f1-micro"
+db_name            = "paralelo_db"
+db_user            = "postgres"
+db_password        = "CambiarPorTuPasswordSeguro123!"
+
+# Si se usa base de datos externa como Neon o Supabase (deja vacío si enable_cloud_sql = true)
+# database_url     = "postgresql+psycopg://user:pass@ep-xyz.us-east-1.aws.neon.tech/neondb?sslmode=require"
+
+# Clave secreta para generación y validación de tokens JWT
+jwt_secret         = "paralelo_movil_super_secret_key_2026_jwt_token"

@@ -30,7 +30,6 @@ fun BenchmarkScreen(
 ) {
     val tasks by benchmarkViewModel.tasks.collectAsState()
     val comparison by benchmarkViewModel.comparison.collectAsState()
-    var showTheoryGuide by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -107,18 +106,25 @@ fun BenchmarkScreen(
                     // Aceleración / Speedup
                     comparison.speedupRatio?.let { speedup ->
                         Divider(color = Slate700, modifier = Modifier.padding(vertical = 12.dp))
+                        
+                        val seqTime = comparison.sequentialTime ?: 0.0
+                        val conTime = comparison.concurrentTime ?: 0.0
+                        val isConcurrentWinner = conTime < seqTime
+                        val winnerName = if (isConcurrentWinner) "Concurrente" else "Secuencial"
+                        val finalSpeedup = if (isConcurrentWinner) speedup else (if (speedup > 0) 1.0 / speedup else 1.0)
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Aceleración (Speedup):", fontWeight = FontWeight.SemiBold, color = Color.White)
+                            Text("Ganador: $winnerName", fontWeight = FontWeight.SemiBold, color = Color.White)
                             Surface(
                                 color = Indigo600.copy(alpha = 0.25f),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text(
-                                    text = String.format(Locale.US, "⚡ %.2fx Más Rápido", speedup),
+                                    text = String.format(Locale.US, "%.2fx mas rapido", finalSpeedup),
                                     color = Cyan500,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp,
@@ -190,35 +196,6 @@ fun BenchmarkScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Botón de Guía para la Exposición en Clase
-            OutlinedButton(
-                onClick = { showTheoryGuide = !showTheoryGuide },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Icon(Icons.Default.School, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(if (showTheoryGuide) "Ocultar Guía de Exposición" else "Ver Guía de Sustentación para Clase")
-            }
-
-            AnimatedVisibility(visible = showTheoryGuide) {
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(containerColor = Slate800)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("🎯 Puntos Clave para Explicar al Profesor:", fontWeight = FontWeight.Bold, color = Cyan500)
-                        Text("1. Proceso: Subida y procesamiento de 5 archivos independientes en la API.", color = Slate100, fontSize = 13.sp)
-                        Text("2. Por qué concurrente: Las peticiones HTTP no tienen dependencia de datos entre sí.", color = Slate100, fontSize = 13.sp)
-                        Text("3. Mecanismo en Kotlin: Coroutines con `async(Dispatchers.IO)` y `awaitAll()`.", color = Slate100, fontSize = 13.sp)
-                        Text("4. Hilos: Pool elástico administrado por `Dispatchers.IO`.", color = Slate100, fontSize = 13.sp)
-                        Text("5. Cuándo NO usar paralelismo: Cuando hay dependencias secuenciales estrictas o el overhead de sincronización supera el tiempo de cómputo.", color = Slate100, fontSize = 13.sp)
-                    }
-                }
-            }
         }
     }
 }

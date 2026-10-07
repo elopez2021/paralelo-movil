@@ -22,7 +22,7 @@ class ConcurrencyBenchmarkViewModel(private val fileRepository: FileRepository) 
         TaskItem(1, "Archivo_Dataset_1.csv", 1024 * 1024 * 5),  // 5 MB
         TaskItem(2, "Reporte_Metricas_2.pdf", 1024 * 1024 * 8), // 8 MB
         TaskItem(3, "Foto_Perfil_3.jpg", 1024 * 1024 * 4),      // 4 MB
-        TaskItem(4, "Datos_Sensores_4.json", 1024 * 1024 * 6),  // 6 MB
+        TaskItem(4, "Datos_Sensores_4.txt", 1024 * 1024 * 6),  // 6 MB
         TaskItem(5, "Log_Auditoria_5.txt", 1024 * 1024 * 7)     // 7 MB
     )
 
