@@ -17,8 +17,18 @@ object RetrofitClient {
             val sessionManager = SessionManager(context.applicationContext)
 
             val logging = HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
+                level = HttpLoggingInterceptor.Level.HEADERS
             }
+
+
+            var baseUrl = Constants.BASE_URL.trim()
+            if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+                baseUrl = "http://$baseUrl"
+            }
+            if (!baseUrl.endsWith("/")) {
+                baseUrl = "$baseUrl/"
+            }
+            Constants.BASE_URL = baseUrl
 
             val okHttpClient = OkHttpClient.Builder()
                 .addInterceptor(AuthInterceptor(sessionManager))

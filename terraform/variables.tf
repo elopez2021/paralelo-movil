@@ -18,7 +18,7 @@ variable "environment" {
 variable "service_name" {
   description = "Nombre base para el servicio de Cloud Run"
   type        = string
-  default     = "paralelo-api"
+  default     = "notificacion"
 }
 
 variable "artifact_repo_name" {

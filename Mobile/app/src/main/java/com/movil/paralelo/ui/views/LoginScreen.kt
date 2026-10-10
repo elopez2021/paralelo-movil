@@ -235,8 +235,17 @@ fun LoginScreen(
             },
             confirmButton = {
                 Button(onClick = {
-                    Constants.BASE_URL = customIp
-                    RetrofitClient.resetClient()
+                    var formattedIp = customIp.trim()
+                    if (formattedIp.isNotEmpty()) {
+                        if (!formattedIp.startsWith("http://") && !formattedIp.startsWith("https://")) {
+                            formattedIp = "http://$formattedIp"
+                        }
+                        if (!formattedIp.endsWith("/")) {
+                            formattedIp = "$formattedIp/"
+                        }
+                        Constants.BASE_URL = formattedIp
+                        RetrofitClient.resetClient()
+                    }
                     showIpDialog = false
                 }) {
                     Text("Guardar")

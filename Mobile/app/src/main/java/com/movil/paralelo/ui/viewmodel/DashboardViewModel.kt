@@ -7,6 +7,7 @@ import com.movil.paralelo.data.repository.DashboardRepository
 import com.movil.paralelo.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,28 +30,34 @@ class DashboardViewModel(private val dashboardRepository: DashboardRepository) :
 
                 // Medimos el tiempo del consumo simultáneo de los 4 endpoints
                 val timeTaken = measureTimeMillis {
-                    // Se disparan en paralelo con Coroutines en Dispatchers.IO
-                    val profileDeferred = async(Dispatchers.IO) { dashboardRepository.getProfile() }
-                    val statsDeferred = async(Dispatchers.IO) { dashboardRepository.getStats() }
-                    val notifDeferred = async(Dispatchers.IO) { dashboardRepository.getNotifications() }
-                    val usersDeferred = async(Dispatchers.IO) { dashboardRepository.getUsers() }
+                    coroutineScope {
+                        // Se disparan en paralelo con Coroutines en Dispatchers.IO
+                        val profileDeferred = async(Dispatchers.IO) { dashboardRepository.getProfile() }
+                        val statsDeferred = async(Dispatchers.IO) { dashboardRepository.getStats() }
+                        val notifDeferred = async(Dispatchers.IO) { dashboardRepository.getNotifications() }
+                        val usersDeferred = async(Dispatchers.IO) { dashboardRepository.getUsers() }
 
-                    // Esperamos la resolución simultánea
-                    profileResult = profileDeferred.await()
-                    statsResult = statsDeferred.await()
-                    notifResult = notifDeferred.await()
-                    usersResult = usersDeferred.await()
+                        // Esperamos la resolución simultánea
+                        profileResult = profileDeferred.await()
+                        statsResult = statsDeferred.await()
+                        notifResult = notifDeferred.await()
+                        usersResult = usersDeferred.await()
+                    }
                 }
 
-                _dashboardState.value = Resource.Success(
-                    DashboardCombinedData(
-                        userProfile = profileResult!!,
-                        stats = statsResult!!,
-                        notifications = notifResult,
-                        usersList = usersResult,
-                        executionTimeMs = timeTaken
+                if (profileResult != null && statsResult != null) {
+                    _dashboardState.value = Resource.Success(
+                        DashboardCombinedData(
+                            userProfile = profileResult,
+                            stats = statsResult,
+                            notifications = notifResult,
+                            usersList = usersResult,
+                            executionTimeMs = timeTaken
+                        )
                     )
-                )
+                } else {
+                    _dashboardState.value = Resource.Error("Error: Datos incompletos recibidos del servidor")
+                }
             } catch (e: Exception) {
                 _dashboardState.value = Resource.Error(e.localizedMessage ?: "Error al cargar dashboard")
             }

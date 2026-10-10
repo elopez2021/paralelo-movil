@@ -17,7 +17,7 @@ jobs:
   # ETAPA 1: Tests automatizados y Linting
   # ----------------------------------------------------------------------------
   test:
-    name: 🧪 Tests & Validación de Código
+    name: Tests & Validación de Código
     runs-on: ubuntu-latest
     steps:
       - name: Descargar repositorio
@@ -42,7 +42,7 @@ jobs:
   # ETAPA 2: Build Docker, Infraestructura Terraform y Despliegue Cloud Run
   # ----------------------------------------------------------------------------
   deploy:
-    name: 🚀 Build, Terraform Apply & Despliegue en GCP
+    name: Build, Terraform Apply & Despliegue en GCP
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -156,12 +156,9 @@ jobs:
             -var="jwt_secret=${{ secrets.JWT_SECRET || 'paralelo_movil_super_secret_key_2026_jwt_token' }}"
 
       # 10. Imprimir URLs públicas generadas para la app móvil
-      - name: 🌐 URLs Públicas del Despliegue
+      - name: URLs Públicas del Despliegue
         working-directory: terraform
         run: |
-          echo "=========================================================="
-          echo "         🎉 DESPLIEGUE COMPLETADO CON ÉXITO               "
-          echo "=========================================================="
           echo "Cloud Run URL:"
           terraform output -raw cloud_run_url
           echo ""
@@ -170,4 +167,3 @@ jobs:
           echo ""
           echo "Cloud SQL Connection:"
           terraform output -raw cloud_sql_connection_name
-          echo "=========================================================="

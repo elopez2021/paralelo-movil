@@ -10,6 +10,7 @@ import com.movil.paralelo.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,11 +20,11 @@ import kotlin.system.measureTimeMillis
 class ConcurrencyBenchmarkViewModel(private val fileRepository: FileRepository) : ViewModel() {
 
     private val defaultTasks = listOf(
-        TaskItem(1, "Archivo_Dataset_1.csv", 1024 * 1024 * 5),  // 5 MB
-        TaskItem(2, "Reporte_Metricas_2.pdf", 1024 * 1024 * 8), // 8 MB
-        TaskItem(3, "Foto_Perfil_3.jpg", 1024 * 1024 * 4),      // 4 MB
-        TaskItem(4, "Datos_Sensores_4.txt", 1024 * 1024 * 6),  // 6 MB
-        TaskItem(5, "Log_Auditoria_5.txt", 1024 * 1024 * 7)     // 7 MB
+        TaskItem(1, "Archivo_Dataset_1.csv", 1024 * 1024 * 1),  // 1 MB
+        TaskItem(2, "Reporte_Metricas_2.pdf", 1024 * 1024 * 2), // 2 MB
+        TaskItem(3, "Foto_Perfil_3.jpg", 1024 * 512),           // 512 KB
+        TaskItem(4, "Datos_Sensores_4.txt", 1024 * 1024 * 1),  // 1 MB
+        TaskItem(5, "Log_Auditoria_5.txt", 1024 * 1024 * 2)     // 2 MB
     )
 
     private val _tasks = MutableStateFlow<List<TaskItem>>(defaultTasks.map { it.copy() })
@@ -56,12 +57,16 @@ class ConcurrencyBenchmarkViewModel(private val fileRepository: FileRepository) 
                     _tasks.value = currentTaskList.toList()
 
                     val taskTime = measureTimeMillis {
-                        val content = ByteArray(task.sizeBytes.toInt()) { (it % 256).toByte() }
-                        val res = fileRepository.uploadBytes(task.name, content, "application/octet-stream")
-                        if (res is Resource.Error) {
+                        try {
+                            val content = ByteArray(task.sizeBytes.toInt()) { (it % 256).toByte() }
+                            val res = fileRepository.uploadBytes(task.name, content, "application/octet-stream")
+                            if (res is Resource.Error) {
+                                currentTaskList[i] = task.copy(status = TaskStatus.ERROR)
+                            } else {
+                                currentTaskList[i] = task.copy(status = TaskStatus.COMPLETED)
+                            }
+                        } catch (_: Exception) {
                             currentTaskList[i] = task.copy(status = TaskStatus.ERROR)
-                        } else {
-                            currentTaskList[i] = task.copy(status = TaskStatus.COMPLETED)
                         }
                     }
 
@@ -102,32 +107,42 @@ class ConcurrencyBenchmarkViewModel(private val fileRepository: FileRepository) 
             _tasks.value = currentTaskList.toList()
 
             val totalTime = measureTimeMillis {
-                // Se despachan todas simultáneamente en el pool Dispatchers.IO
-                val deferredList = currentTaskList.indices.map { index ->
-                    async(Dispatchers.IO) {
-                        val task = currentTaskList[index]
-                        var finalStatus = TaskStatus.COMPLETED
-                        val taskTime = measureTimeMillis {
-                            val content = ByteArray(task.sizeBytes.toInt()) { (it % 256).toByte() }
-                            val res = fileRepository.uploadBytes(task.name, content, "application/octet-stream")
-                            if (res is Resource.Error) {
-                                finalStatus = TaskStatus.ERROR
+                try {
+                    coroutineScope {
+                        // Se despachan todas simultáneamente en el pool Dispatchers.IO
+                        val deferredList = currentTaskList.indices.map { index ->
+                            async(Dispatchers.IO) {
+                                val task = currentTaskList[index]
+                                var finalStatus = TaskStatus.COMPLETED
+                                val taskTime = measureTimeMillis {
+                                    try {
+                                        val content = ByteArray(task.sizeBytes.toInt()) { (it % 256).toByte() }
+                                        val res = fileRepository.uploadBytes(task.name, content, "application/octet-stream")
+                                        if (res is Resource.Error) {
+                                            finalStatus = TaskStatus.ERROR
+                                        }
+                                    } catch (_: Exception) {
+                                        finalStatus = TaskStatus.ERROR
+                                    }
+                                }
+                                Triple(index, taskTime, finalStatus)
                             }
                         }
-                        Triple(index, taskTime, finalStatus)
+
+                        // Esperamos la resolución concurrente de todos los hilos
+                        val results = deferredList.awaitAll()
+
+                        for ((idx, timeTaken, finalStatus) in results) {
+                            currentTaskList[idx] = currentTaskList[idx].copy(
+                                status = finalStatus,
+                                timeTakenMs = timeTaken
+                            )
+                        }
+                        _tasks.value = currentTaskList.toList()
                     }
+                } catch (_: Exception) {
+                    // Manejo seguro ante cualquier cancelación o falla de corrutina
                 }
-
-                // Esperamos la resolución concurrente de todos los hilos
-                val results = deferredList.awaitAll()
-
-                for ((idx, timeTaken, finalStatus) in results) {
-                    currentTaskList[idx] = currentTaskList[idx].copy(
-                        status = finalStatus,
-                        timeTakenMs = timeTaken
-                    )
-                }
-                _tasks.value = currentTaskList.toList()
             }
 
             val seconds = totalTime / 1000.0
