@@ -5,7 +5,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone
 
-# Configuración de Logging para Google Cloud Logging
+# Configuracion de Logging para Google Cloud Logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s"
@@ -21,14 +21,14 @@ SMTP_FROM = os.getenv("SMTP_FROM", SMTP_USER or "notificaciones@paralelo-movil.c
 
 def send_email_notification(email: str, subject: str, message: str, message_id: str = "N/A") -> dict:
     """
-    Procesa y envía el correo electrónico hacia el destinatario.
-    Si se proporcionan credenciales SMTP (ej: Gmail / SendGrid), envía el correo real.
-    Si no hay credenciales, registra el evento completo en Cloud Logging para la evidencia académica.
+    Procesa y envia el correo electronico hacia el destinatario.
+    Si se proporcionan credenciales SMTP (ej: Gmail / SendGrid), envia el correo real.
+    Si no hay credenciales, registra el evento completo en Cloud Logging para la evidencia academica.
     """
     timestamp = datetime.now(timezone.utc).isoformat()
 
     logger.info("============================================================")
-    logger.info("📬 [PUB/SUB NOTIFICACIÓN RECIBIDA EN CLOUD RUN]")
+    logger.info("[PUB/SUB NOTIFICACION RECIBIDA EN CLOUD RUN]")
     logger.info(f"   -> Message ID GCP: {message_id}")
     logger.info(f"   -> Destinatario:   {email}")
     logger.info(f"   -> Asunto:         {subject}")
@@ -36,7 +36,7 @@ def send_email_notification(email: str, subject: str, message: str, message_id: 
     logger.info(f"   -> Timestamp UTC:  {timestamp}")
     logger.info("============================================================")
 
-    # Si hay credenciales SMTP configuradas, intentamos el envío real
+    # Si hay credenciales SMTP configuradas, intentamos el envio real
     if SMTP_HOST and SMTP_USER and SMTP_PASSWORD:
         try:
             msg = MIMEMultipart("alternative")
@@ -48,11 +48,11 @@ def send_email_notification(email: str, subject: str, message: str, message_id: 
             <html>
             <body style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
                 <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; padding: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    <h2 style="color: #1a73e8; margin-top: 0;">🚀 Paralelo Móvil - Notificación</h2>
+                    <h2 style="color: #1a73e8; margin-top: 0;">Paralelo Movil - Notificacion</h2>
                     <p style="font-size: 16px; color: #333333;">{message}</p>
                     <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />
                     <p style="font-size: 12px; color: #888888;">
-                        Enviado automáticamente por <strong>notification-cloud-run</strong> vía Google Cloud Pub/Sub.<br />
+                        Enviado automaticamente por <strong>notification-cloud-run</strong> via Google Cloud Pub/Sub.<br />
                         Message ID: <code>{message_id}</code>
                     </p>
                 </div>
@@ -67,7 +67,7 @@ def send_email_notification(email: str, subject: str, message: str, message_id: 
                 server.login(SMTP_USER, SMTP_PASSWORD)
                 server.sendmail(SMTP_FROM, [email], msg.as_string())
 
-            logger.info(f"✅ [ÉXITO] Correo electrónico enviado exitosamente vía SMTP a {email}")
+            logger.info(f"[EXITO] Correo electronico enviado exitosamente via SMTP a {email}")
             return {
                 "status": "DELIVERED",
                 "mode": "REAL_SMTP",
@@ -76,7 +76,7 @@ def send_email_notification(email: str, subject: str, message: str, message_id: 
                 "messageId": message_id,
             }
         except Exception as e:
-            logger.error(f"⚠️ [SMTP ERROR] Error enviando correo vía SMTP ({str(e)}). Registrado en logs.")
+            logger.error(f"[SMTP ERROR] Error enviando correo via SMTP ({str(e)}). Registrado en logs.")
             return {
                 "status": "LOGGED_FALLBACK",
                 "mode": "FALLBACK_LOG",
@@ -86,8 +86,8 @@ def send_email_notification(email: str, subject: str, message: str, message_id: 
                 "messageId": message_id,
             }
 
-    # Modo simulación / registro en Cloud Logging (cuando no hay SMTP configurado)
-    logger.info("ℹ️ [MODO CLOUD LOGGING] No se configuró SMTP externo. Evento registrado como evidencia en Cloud Logging.")
+    # Modo simulacion / registro en Cloud Logging (cuando no hay SMTP configurado)
+    logger.info("[MODO CLOUD LOGGING] No se configuro SMTP externo. Evento registrado como evidencia en Cloud Logging.")
     return {
         "status": "DELIVERED",
         "mode": "CLOUD_LOGGING",
