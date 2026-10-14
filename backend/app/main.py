@@ -9,7 +9,7 @@ from backend.app.database.session import engine, Base, SessionLocal
 from backend.app.models.user import User
 from backend.app.models.file_record import FileRecord
 from backend.app.core.security import get_password_hash
-from backend.app.routers import auth, users, files, dashboard
+from backend.app.routers import auth, users, files, dashboard, notifications
 from backend.app.services.computation import run_sequential, run_concurrent
 
 # Crear tablas en la base de datos
@@ -64,6 +64,7 @@ app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(files.router)
 app.include_router(dashboard.router)
+app.include_router(notifications.router)
 
 
 @app.get("/", tags=["Info"])
@@ -80,6 +81,7 @@ def read_root():
             "dashboard_profile": "GET /dashboard/profile",
             "dashboard_stats": "GET /dashboard/stats",
             "dashboard_notifications": "GET /dashboard/notifications",
+            "send_notification": "POST /notifications/send",
             "sequential_computation": "GET /api/proceso/secuencial",
             "concurrent_computation": "GET /api/proceso/concurrente",
         },

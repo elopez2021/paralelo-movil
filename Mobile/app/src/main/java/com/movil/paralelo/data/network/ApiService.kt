@@ -59,4 +59,11 @@ interface ApiService {
 
     @GET("api/proceso/concurrente")
     suspend fun getConcurrentComputation(): Response<Map<String, Any>>
+
+    // 6. Notificaciones Asincronas (Pub/Sub)
+    @POST("notifications/send")
+    suspend fun sendNotification(
+        @Body request: NotificationSendRequest
+    ): Response<NotificationSendResponse>
 }
+

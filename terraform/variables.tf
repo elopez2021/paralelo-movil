@@ -77,3 +77,53 @@ variable "db_password" {
   sensitive   = true
   default     = "ParaleloDb2026Secure!"
 }
+
+variable "notification_service_name" {
+  description = "Nombre del microservicio Cloud Run de Notificaciones"
+  type        = string
+  default     = "notification-cloud-run"
+}
+
+variable "pubsub_topic_name" {
+  description = "Nombre del Topic de Google Cloud Pub/Sub para notificaciones"
+  type        = string
+  default     = "notifications-topic"
+}
+
+variable "notification_container_image" {
+  description = "URL de la imagen Docker para el servicio de notificaciones en Artifact Registry"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_host" {
+  description = "Host del servidor SMTP para envío de correos (opcional)"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_port" {
+  description = "Puerto del servidor SMTP"
+  type        = number
+  default     = 587
+}
+
+variable "smtp_user" {
+  description = "Usuario o correo del servidor SMTP"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_password" {
+  description = "Contraseña o App Password del servidor SMTP"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "smtp_from" {
+  description = "Dirección remitente para los correos enviados"
+  type        = string
+  default     = ""
+}
+

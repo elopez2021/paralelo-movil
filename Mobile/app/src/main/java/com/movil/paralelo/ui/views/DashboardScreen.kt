@@ -27,6 +27,7 @@ fun DashboardScreen(
     dashboardViewModel: DashboardViewModel,
     onNavigateUsers: () -> Unit,
     onNavigateBenchmark: () -> Unit,
+    onNavigateNotification: () -> Unit,
     onLogout: () -> Unit
 ) {
     val dashboardState by dashboardViewModel.dashboardState.collectAsState()
@@ -85,7 +86,8 @@ fun DashboardScreen(
                     DashboardContent(
                         data = state.data,
                         onNavigateUsers = onNavigateUsers,
-                        onNavigateBenchmark = onNavigateBenchmark
+                        onNavigateBenchmark = onNavigateBenchmark,
+                        onNavigateNotification = onNavigateNotification
                     )
                 }
                 is Resource.Error -> {
@@ -111,7 +113,8 @@ fun DashboardScreen(
 private fun DashboardContent(
     data: DashboardCombinedData,
     onNavigateUsers: () -> Unit,
-    onNavigateBenchmark: () -> Unit
+    onNavigateBenchmark: () -> Unit,
+    onNavigateNotification: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -226,6 +229,18 @@ private fun DashboardContent(
             Icon(Icons.Default.PersonSearch, contentDescription = null)
             Spacer(modifier = Modifier.width(10.dp))
             Text("Gestión de Usuarios (CRUD)")
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        OutlinedButton(
+            onClick = onNavigateNotification,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Icon(Icons.Default.Email, contentDescription = null)
+            Spacer(modifier = Modifier.width(10.dp))
+            Text("Enviar Notificación (Pub/Sub)")
         }
 
         Spacer(modifier = Modifier.height(20.dp))

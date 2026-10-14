@@ -41,3 +41,15 @@ def test_full_api_flow():
     # 7. Cleanup
     assert client.delete(f"/upload/{file_id}", headers=headers).status_code == 200
     assert client.delete(f"/users/{user_id}", headers=headers).status_code == 200
+
+
+def test_send_notification_pubsub():
+    r = client.post("/notifications/send", json={
+        "email": "estudiante@correo.com",
+        "subject": "Prueba PUB/SUB",
+        "message": "Hola desde GCP Serverless"
+    })
+    assert r.status_code == 200
+    assert r.json()["status"] == "success"
+    assert "messageId" in r.json()
+

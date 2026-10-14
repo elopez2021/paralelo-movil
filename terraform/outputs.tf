@@ -27,3 +27,19 @@ output "cloud_sql_connection_name" {
   description = "Nombre de conexión de la instancia de Cloud SQL"
   value       = var.enable_cloud_sql ? google_sql_database_instance.postgres_instance[0].connection_name : "N/A"
 }
+
+output "pubsub_topic_name" {
+  description = "Nombre del Topic de Google Cloud Pub/Sub"
+  value       = google_pubsub_topic.notifications_topic.name
+}
+
+output "pubsub_subscription_name" {
+  description = "Nombre de la Suscripción Push de Pub/Sub"
+  value       = google_pubsub_subscription.notification_push_sub.name
+}
+
+output "notification_cloud_run_url" {
+  description = "URL del microservicio de notificaciones notification-cloud-run"
+  value       = google_cloud_run_v2_service.notification_service.uri
+}
+

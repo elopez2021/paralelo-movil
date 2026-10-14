@@ -11,7 +11,8 @@ locals {
     "secretmanager.googleapis.com",
     "cloudbuild.googleapis.com",
     "logging.googleapis.com",
-    "storage.googleapis.com"
+    "storage.googleapis.com",
+    "pubsub.googleapis.com"
   ]
 }
 
@@ -226,6 +227,16 @@ resource "google_cloud_run_v2_service" "api" {
           }
         }
       }
+
+      env {
+        name  = "PUBSUB_TOPIC_NAME"
+        value = var.pubsub_topic_name
+      }
+
+      env {
+        name  = "GCP_PROJECT_ID"
+        value = var.project_id
+      }
     }
   }
 
@@ -288,3 +299,131 @@ resource "google_api_gateway_gateway" "gateway" {
 
   depends_on = [google_api_gateway_api_config.api_cfg]
 }
+
+# 9. Google Cloud Pub/Sub Topic
+resource "google_pubsub_topic" "notifications_topic" {
+  name    = var.pubsub_topic_name
+  project = var.project_id
+
+  depends_on = [google_project_service.enabled_apis]
+}
+
+# Permiso para que el backend (paralelo-run-sa) pueda publicar mensajes en el Topic
+resource "google_pubsub_topic_iam_member" "backend_publisher" {
+  project = var.project_id
+  topic   = google_pubsub_topic.notifications_topic.name
+  role    = "roles/pubsub.publisher"
+  member  = "serviceAccount:${google_service_account.cloud_run_sa.email}"
+}
+
+# Service Account para invocar Cloud Run desde la suscripción Push de Pub/Sub
+resource "google_service_account" "pubsub_invoker_sa" {
+  account_id   = "pubsub-invoker-sa"
+  display_name = "Service Account para Push de Pub/Sub a Cloud Run"
+  project      = var.project_id
+}
+
+# 10. Cloud Run: notification-cloud-run
+locals {
+  default_notification_image = "${var.region}-docker.pkg.dev/${var.project_id}/${var.artifact_repo_name}/notification-service:latest"
+  notification_image_to_use  = var.notification_container_image != "" ? var.notification_container_image : local.default_notification_image
+}
+
+resource "google_cloud_run_v2_service" "notification_service" {
+  name     = var.notification_service_name
+  location = var.region
+  project  = var.project_id
+  ingress  = "INGRESS_TRAFFIC_ALL"
+
+  template {
+    scaling {
+      min_instance_count = 0
+      max_instance_count = 3
+    }
+
+    containers {
+      image = local.notification_image_to_use
+
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "256Mi"
+        }
+      }
+
+      ports {
+        container_port = 8080
+      }
+
+      env {
+        name  = "SMTP_HOST"
+        value = var.smtp_host
+      }
+
+      env {
+        name  = "SMTP_PORT"
+        value = tostring(var.smtp_port)
+      }
+
+      env {
+        name  = "SMTP_USER"
+        value = var.smtp_user
+      }
+
+      env {
+        name  = "SMTP_PASSWORD"
+        value = var.smtp_password
+      }
+
+      env {
+        name  = "SMTP_FROM"
+        value = var.smtp_from
+      }
+    }
+  }
+
+  depends_on = [google_project_service.enabled_apis]
+}
+
+# Permitir que la Service Account de Pub/Sub invoque notification-cloud-run
+resource "google_cloud_run_v2_service_iam_member" "pubsub_run_invoker" {
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.notification_service.name
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_service_account.pubsub_invoker_sa.email}"
+}
+
+# Permitir acceso publico para health check / pruebas directas
+resource "google_cloud_run_v2_service_iam_member" "notification_public_invoker" {
+  project  = var.project_id
+  location = var.region
+  name     = google_cloud_run_v2_service.notification_service.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+# 11. Suscripción Push de Pub/Sub hacia notification-cloud-run
+resource "google_pubsub_subscription" "notification_push_sub" {
+  name    = "notifications-push-sub"
+  topic   = google_pubsub_topic.notifications_topic.name
+  project = var.project_id
+
+  ack_deadline_seconds = 60
+
+  push_config {
+    push_endpoint = google_cloud_run_v2_service.notification_service.uri
+
+    oidc_token {
+      service_account_email = google_service_account.pubsub_invoker_sa.email
+      audience              = google_cloud_run_v2_service.notification_service.uri
+    }
+  }
+
+  depends_on = [
+    google_pubsub_topic.notifications_topic,
+    google_cloud_run_v2_service.notification_service,
+    google_cloud_run_v2_service_iam_member.pubsub_run_invoker
+  ]
+}
+

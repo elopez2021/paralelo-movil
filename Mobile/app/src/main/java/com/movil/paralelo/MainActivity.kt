@@ -15,16 +15,19 @@ import com.movil.paralelo.data.network.RetrofitClient
 import com.movil.paralelo.data.repository.AuthRepository
 import com.movil.paralelo.data.repository.DashboardRepository
 import com.movil.paralelo.data.repository.FileRepository
+import com.movil.paralelo.data.repository.NotificationRepository
 import com.movil.paralelo.data.repository.UserRepository
 import com.movil.paralelo.ui.theme.ParaleloMovilTheme
 import com.movil.paralelo.ui.theme.Slate900
 import com.movil.paralelo.ui.viewmodel.AuthViewModel
 import com.movil.paralelo.ui.viewmodel.ConcurrencyBenchmarkViewModel
 import com.movil.paralelo.ui.viewmodel.DashboardViewModel
+import com.movil.paralelo.ui.viewmodel.NotificationViewModel
 import com.movil.paralelo.ui.viewmodel.UsersViewModel
 import com.movil.paralelo.ui.views.BenchmarkScreen
 import com.movil.paralelo.ui.views.DashboardScreen
 import com.movil.paralelo.ui.views.LoginScreen
+import com.movil.paralelo.ui.views.SendNotificationScreen
 import com.movil.paralelo.ui.views.UsersScreen
 import com.movil.paralelo.utils.SessionManager
 
@@ -58,11 +61,13 @@ fun AppNavigation(activity: ComponentActivity) {
     val userRepository = remember { UserRepository(apiService) }
     val fileRepository = remember { FileRepository(apiService) }
     val dashboardRepository = remember { DashboardRepository(apiService) }
+    val notificationRepository = remember { NotificationRepository(apiService) }
 
     val authViewModel = remember { AuthViewModel(authRepository) }
     val usersViewModel = remember { UsersViewModel(userRepository, fileRepository) }
     val dashboardViewModel = remember { DashboardViewModel(dashboardRepository) }
     val benchmarkViewModel = remember { ConcurrencyBenchmarkViewModel(fileRepository) }
+    val notificationViewModel = remember { NotificationViewModel(notificationRepository) }
 
     val startDestination = if (sessionManager.isLoggedIn()) "dashboard" else "login"
 
@@ -83,6 +88,7 @@ fun AppNavigation(activity: ComponentActivity) {
                 dashboardViewModel = dashboardViewModel,
                 onNavigateUsers = { navController.navigate("users") },
                 onNavigateBenchmark = { navController.navigate("benchmark") },
+                onNavigateNotification = { navController.navigate("notifications") },
                 onLogout = {
                     authViewModel.logout()
                     navController.navigate("login") {
@@ -102,6 +108,13 @@ fun AppNavigation(activity: ComponentActivity) {
         composable("benchmark") {
             BenchmarkScreen(
                 benchmarkViewModel = benchmarkViewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable("notifications") {
+            SendNotificationScreen(
+                notificationViewModel = notificationViewModel,
                 onBack = { navController.popBackStack() }
             )
         }
