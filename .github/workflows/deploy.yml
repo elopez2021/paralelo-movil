@@ -165,6 +165,46 @@ jobs:
             google_api_gateway_api.api_gw \
             projects/${{ env.GCP_PROJECT_ID }}/locations/global/apis/paralelo-api-gateway || true
 
+          terraform import \
+            -var="project_id=${{ env.GCP_PROJECT_ID }}" \
+            -var="region=${{ env.GCP_REGION }}" \
+            -var="container_image=${{ env.CONTAINER_IMAGE }}" \
+            -var="notification_container_image=${{ env.NOTIFICATION_CONTAINER_IMAGE }}" \
+            google_cloud_run_v2_service.api \
+            projects/${{ env.GCP_PROJECT_ID }}/locations/${{ env.GCP_REGION }}/services/notificacion || true
+
+          terraform import \
+            -var="project_id=${{ env.GCP_PROJECT_ID }}" \
+            -var="region=${{ env.GCP_REGION }}" \
+            -var="container_image=${{ env.CONTAINER_IMAGE }}" \
+            -var="notification_container_image=${{ env.NOTIFICATION_CONTAINER_IMAGE }}" \
+            google_pubsub_topic.notifications_topic \
+            projects/${{ env.GCP_PROJECT_ID }}/topics/notifications-topic || true
+
+          terraform import \
+            -var="project_id=${{ env.GCP_PROJECT_ID }}" \
+            -var="region=${{ env.GCP_REGION }}" \
+            -var="container_image=${{ env.CONTAINER_IMAGE }}" \
+            -var="notification_container_image=${{ env.NOTIFICATION_CONTAINER_IMAGE }}" \
+            google_service_account.pubsub_invoker_sa \
+            projects/${{ env.GCP_PROJECT_ID }}/serviceAccounts/pubsub-invoker-sa@${{ env.GCP_PROJECT_ID }}.iam.gserviceaccount.com || true
+
+          terraform import \
+            -var="project_id=${{ env.GCP_PROJECT_ID }}" \
+            -var="region=${{ env.GCP_REGION }}" \
+            -var="container_image=${{ env.CONTAINER_IMAGE }}" \
+            -var="notification_container_image=${{ env.NOTIFICATION_CONTAINER_IMAGE }}" \
+            google_cloud_run_v2_service.notification_service \
+            projects/${{ env.GCP_PROJECT_ID }}/locations/${{ env.GCP_REGION }}/services/notification-cloud-run || true
+
+          terraform import \
+            -var="project_id=${{ env.GCP_PROJECT_ID }}" \
+            -var="region=${{ env.GCP_REGION }}" \
+            -var="container_image=${{ env.CONTAINER_IMAGE }}" \
+            -var="notification_container_image=${{ env.NOTIFICATION_CONTAINER_IMAGE }}" \
+            google_pubsub_subscription.notification_push_sub \
+            projects/${{ env.GCP_PROJECT_ID }}/subscriptions/notifications-push-subscription || true
+
           terraform apply -auto-approve \
             -var="project_id=${{ env.GCP_PROJECT_ID }}" \
             -var="region=${{ env.GCP_REGION }}" \
