@@ -131,6 +131,9 @@ jobs:
       # 9. Terraform Plan y Apply para todos los recursos (Cloud SQL, Secret Manager, Cloud Run, Pub/Sub, API Gateway)
       - name: Terraform Apply (Infraestructura completa)
         working-directory: terraform
+        env:
+          TF_VAR_smtp_password: ${{ secrets.SMTP_PASSWORD }}
+          TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET || 'paralelo_movil_super_secret_key_2026_jwt_token' }}
         run: |
           echo "Importando recursos existentes si fueron creados previamente..."
           terraform import \
