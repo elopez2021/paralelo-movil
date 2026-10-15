@@ -16,6 +16,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         200:
           description: "OK"
@@ -27,6 +28,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         200:
           description: "OK"
@@ -38,6 +40,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         200:
           description: "OK"
@@ -49,6 +52,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         201:
           description: "Created"
@@ -60,6 +64,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         200:
           description: "OK"
@@ -69,6 +74,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         201:
           description: "Created"
@@ -85,6 +91,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         200:
           description: "OK"
@@ -99,6 +106,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         200:
           description: "OK"
@@ -113,6 +121,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         200:
           description: "OK"
@@ -124,6 +133,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         201:
           description: "Created"
@@ -135,6 +145,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         200:
           description: "OK"
@@ -146,6 +157,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         200:
           description: "OK"
@@ -157,6 +169,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         200:
           description: "OK"
@@ -168,6 +181,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         200:
           description: "OK"
@@ -179,6 +193,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         200:
           description: "OK"
@@ -190,6 +205,7 @@ paths:
       x-google-backend:
         address: "${cloud_run_url}"
         path_translation: "APPEND_PATH_TO_ADDRESS"
+        disable_auth: true
       responses:
         200:
           description: "OK"
