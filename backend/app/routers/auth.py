@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
@@ -9,19 +10,53 @@ from backend.app.schemas.token import Token
 from backend.app.core.security import get_password_hash, verify_password, create_access_token, decode_access_token
 
 router = APIRouter(prefix="", tags=["Autenticación"])
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    request: Request,
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: Session = Depends(get_db)
 ) -> User:
-    token = credentials.credentials
+    token: Optional[str] = None
+
+    # 1. Si la peticion viene a traves de Google Cloud API Gateway, el token original
+    # del cliente es trasladado al encabezado 'X-Forwarded-Authorization'
+    forwarded_auth = request.headers.get("x-forwarded-authorization") or request.headers.get("X-Forwarded-Authorization")
+    if forwarded_auth:
+        parts = forwarded_auth.strip().split(" ", 1)
+        if len(parts) == 2 and parts[0].lower() == "bearer":
+            token = parts[1]
+        elif len(parts) == 1:
+            token = parts[0]
+
+    # 2. Si no viene en el encabezado reenviado, leer de las credenciales de Authorization
+    if not token and credentials:
+        token = credentials.credentials
+    elif not token:
+        auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
+        if auth_header:
+            parts = auth_header.strip().split(" ", 1)
+            if len(parts) == 2 and parts[0].lower() == "bearer":
+                token = parts[1]
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales de autenticacion no suministradas",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     payload = decode_access_token(token)
+    # Si fallo con el token de X-Forwarded-Authorization (o si este contenia basura),
+    # intentar decodificar el token directo si existia
+    if (not payload or "sub" not in payload) and credentials and credentials.credentials and credentials.credentials != token:
+        payload = decode_access_token(credentials.credentials)
+
     if not payload or "sub" not in payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token inválido o expirado",
+            detail="Token invalido o expirado",
             headers={"WWW-Authenticate": "Bearer"},
         )
     user_id = payload.get("sub")

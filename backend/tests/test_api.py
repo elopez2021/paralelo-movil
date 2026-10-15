@@ -53,3 +53,24 @@ def test_send_notification_pubsub():
     assert r.json()["status"] == "success"
     assert "messageId" in r.json()
 
+
+def test_api_gateway_forwarded_auth():
+    # Login to get valid user token
+    r = client.post("/login", json={"email": "admin@paralelo.com", "password": "admin123"})
+    assert r.status_code == 200
+    token = r.json()["access_token"]
+
+    # Simular peticion de API Gateway donde Authorization tiene un token OIDC de Google
+    # y el token real del usuario viaja en X-Forwarded-Authorization
+    gateway_headers = {
+        "Authorization": "Bearer google_oidc_token_12345",
+        "X-Forwarded-Authorization": f"Bearer {token}"
+    }
+
+    resp = client.get("/dashboard/profile", headers=gateway_headers)
+    assert resp.status_code == 200
+    assert resp.json()["email"] == "admin@paralelo.com"
+
+    resp_stats = client.get("/dashboard/stats", headers=gateway_headers)
+    assert resp_stats.status_code == 200
+
