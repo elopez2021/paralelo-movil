@@ -28,12 +28,12 @@ def send_email_notification(email: str, subject: str, message: str, message_id: 
     timestamp = datetime.now(timezone.utc).isoformat()
 
     logger.info("============================================================")
-    logger.info("[PUB/SUB NOTIFICACION RECIBIDA EN CLOUD RUN]")
-    logger.info(f"   -> Message ID GCP: {message_id}")
-    logger.info(f"   -> Destinatario:   {email}")
-    logger.info(f"   -> Asunto:         {subject}")
-    logger.info(f"   -> Mensaje:        {message}")
-    logger.info(f"   -> Timestamp UTC:  {timestamp}")
+    logger.info("PUB/SUB NOTIFICACION RECIBIDA EN CLOUD RUN")
+    logger.info(f"-> Message ID GCP: {message_id}")
+    logger.info(f"-> Destinatario:   {email}")
+    logger.info(f"-> Asunto:         {subject}")
+    logger.info(f"-> Mensaje:        {message}")
+    logger.info(f"-> Timestamp UTC:  {timestamp}")
     logger.info("============================================================")
 
     # Si hay credenciales SMTP configuradas, intentamos el envio real

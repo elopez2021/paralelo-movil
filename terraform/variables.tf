@@ -99,7 +99,7 @@ variable "notification_container_image" {
 variable "smtp_host" {
   description = "Host del servidor SMTP para envío de correos (opcional)"
   type        = string
-  default     = ""
+  default     = "smtp-relay.brevo.com"
 }
 
 variable "smtp_port" {
@@ -111,7 +111,7 @@ variable "smtp_port" {
 variable "smtp_user" {
   description = "Usuario o correo del servidor SMTP"
   type        = string
-  default     = ""
+  default     = "9d8bae001@smtp-brevo.com"
 }
 
 variable "smtp_password" {
@@ -124,6 +124,6 @@ variable "smtp_password" {
 variable "smtp_from" {
   description = "Dirección remitente para los correos enviados"
   type        = string
-  default     = ""
+  default     = "edgarlopez19082004@gmail.com"
 }
 

@@ -218,7 +218,8 @@ jobs:
             -var="region=${{ env.GCP_REGION }}" \
             -var="container_image=${{ env.CONTAINER_IMAGE }}" \
             -var="notification_container_image=${{ env.NOTIFICATION_CONTAINER_IMAGE }}" \
-            -var="jwt_secret=${{ secrets.JWT_SECRET || 'paralelo_movil_super_secret_key_2026_jwt_token' }}"
+            -var="jwt_secret=${{ secrets.JWT_SECRET || 'paralelo_movil_super_secret_key_2026_jwt_token' }}" \
+            -var="smtp_password=${{ secrets.SMTP_PASSWORD || '' }}"
 
       # 10. Imprimir URLs públicas generadas para la app móvil
       - name: URLs Públicas del Despliegue
