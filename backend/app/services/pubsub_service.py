@@ -52,7 +52,7 @@ def publish_notification_to_pubsub(email: str, subject: str, message: str) -> st
         except Exception as err:
             logger.error(f"[PUBSUB ERROR] Error publicando en GCP Pub/Sub ({err}). Aplicando fallback local...")
 
-    # Fallback local / simulación si no hay credenciales GCP activas
+    # si no hay credenciales GCP activas
     mock_id = f"mock-msg-{uuid.uuid4().hex[:8]}"
     logger.info(f"[PUBSUB SIMULADO LOCAL] Destinatario: {email} | Asunto: {subject} | ID: {mock_id}")
     return mock_id

@@ -308,6 +308,15 @@ resource "google_pubsub_topic" "notifications_topic" {
   depends_on = [google_project_service.enabled_apis]
 }
 
+resource "google_pubsub_topic" "email_topic" {
+  name    = var.pubsub_topic_name
+  project = var.project_id
+
+  depends_on = [google_project_service.enabled_apis]
+}
+
+
+
 # Permiso para que el backend (paralelo-run-sa) pueda publicar mensajes en el Topic
 resource "google_pubsub_topic_iam_member" "backend_publisher" {
   project = var.project_id
@@ -315,6 +324,15 @@ resource "google_pubsub_topic_iam_member" "backend_publisher" {
   role    = "roles/pubsub.publisher"
   member  = "serviceAccount:${google_service_account.cloud_run_sa.email}"
 }
+
+resource "google_pubsub_topic_iam_member" "backend_email_topic" {
+  project = var.project_id
+  topic   = google_pubsub_topic.email_topic.name
+  role    = "roles/pubsub.publisher"
+  member  = "serviceAccount:${google_service_account.cloud_run_sa.email}"
+}
+
+
 
 # Service Account para invocar Cloud Run desde la suscripción Push de Pub/Sub
 resource "google_service_account" "pubsub_invoker_sa" {
@@ -406,7 +424,7 @@ resource "google_cloud_run_v2_service_iam_member" "notification_public_invoker" 
 # 11. Suscripción Push de Pub/Sub hacia notification-cloud-run
 resource "google_pubsub_subscription" "notification_push_sub" {
   name    = "notifications-push-sub"
-  topic   = google_pubsub_topic.notifications_topic.name
+  topic   = google_pubsub_topic.email_topic.name
   project = var.project_id
 
   ack_deadline_seconds = 60
