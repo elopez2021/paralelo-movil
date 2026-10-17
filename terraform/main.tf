@@ -301,12 +301,7 @@ resource "google_api_gateway_gateway" "gateway" {
 }
 
 # 9. Google Cloud Pub/Sub Topic
-resource "google_pubsub_topic" "notifications_topic" {
-  name    = var.pubsub_topic_name
-  project = var.project_id
 
-  depends_on = [google_project_service.enabled_apis]
-}
 
 resource "google_pubsub_topic" "email_topic" {
   name    = var.pubsub_topic_name
@@ -317,15 +312,9 @@ resource "google_pubsub_topic" "email_topic" {
 
 
 
-# Permiso para que el backend (paralelo-run-sa) pueda publicar mensajes en el Topic
-resource "google_pubsub_topic_iam_member" "backend_publisher" {
-  project = var.project_id
-  topic   = google_pubsub_topic.notifications_topic.name
-  role    = "roles/pubsub.publisher"
-  member  = "serviceAccount:${google_service_account.cloud_run_sa.email}"
-}
 
-resource "google_pubsub_topic_iam_member" "backend_email_topic" {
+
+resource "google_pubsub_topic_iam_member" "backend_publisher" {
   project = var.project_id
   topic   = google_pubsub_topic.email_topic.name
   role    = "roles/pubsub.publisher"
@@ -439,7 +428,7 @@ resource "google_pubsub_subscription" "notification_push_sub" {
   }
 
   depends_on = [
-    google_pubsub_topic.notifications_topic,
+    google_pubsub_topic.email_topic,
     google_cloud_run_v2_service.notification_service,
     google_cloud_run_v2_service_iam_member.pubsub_run_invoker
   ]
